@@ -8,23 +8,6 @@ locals {
   EOT
 }
 
-resource "aws_instance" "control" {
-  ami                         = local.ubuntu_ami_id
-  instance_type               = var.instance_type
-  subnet_id                   = aws_subnet.public.id
-  vpc_security_group_ids      = [aws_security_group.nodes.id]
-  key_name                    = aws_key_pair.this.key_name
-  associate_public_ip_address = true
-
-  user_data = <<-EOT
-    #cloud-config
-    hostname: control
-    ${local.common_user_data}
-  EOT
-
-  tags = merge(local.tags, { Name = "${local.name}-control", Role = "control" })
-}
-
 resource "aws_instance" "lb" {
   ami                         = local.ubuntu_ami_id
   instance_type               = var.instance_type
@@ -79,7 +62,6 @@ resource "aws_instance" "db" {
 resource "local_file" "inventory" {
   filename        = "${path.module}/../ansible/inventory.ini"
   content = templatefile("${path.module}/templates/inventory.tmpl", {
-    control_ip = aws_instance.control.public_ip
     lb_ip      = aws_instance.lb.public_ip
     web_ip     = aws_instance.web.public_ip
     db_ip      = aws_instance.db.public_ip
