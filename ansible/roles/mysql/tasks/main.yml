@@ -1,0 +1,24 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for mysql
+- name: install mysql-server
+  apt: name=mysql-server state=present update_cache=yes
+
+- name: install tools
+  apt: name={{item}} state=present update_cache=yes
+  with_items:
+    - python3-mysqldb
+      
+- name: ensure mysql listening on all ports for real
+  lineinfile: dest=/etc/mysql/mysql.conf.d/mysqld.cnf regexp=^bind-address
+              line="bind-address = 0.0.0.0"
+  notify: restart mysql
+
+- name: start mysql
+  service: name=mysql state=started enabled=yes
+
+- name: create demo database
+  mysql_db: name=demo state=present
+
+- name: create mysql user
+  mysql_user: name=demo password=demo priv=demo.*:ALL host='%' state=present

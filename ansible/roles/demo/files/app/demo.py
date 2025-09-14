@@ -9,7 +9,7 @@ app = Flask(__name__)
 # Use the env var if present; default to PyMySQL DSN for compatibility
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URI",
-    "mysql+pymysql://demo:demo@18.175.166.214/demo",
+    "mysql+pymysql://demo:demo@192.168.1.1/demo",
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 

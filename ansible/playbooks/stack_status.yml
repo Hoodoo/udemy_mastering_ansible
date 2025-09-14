@@ -29,8 +29,8 @@
 - hosts: lb
   tasks:
     - name: verify end-to-end index response
-      uri: url=http://3.8.86.80 return_content=yes
-      with_items: groups.loadbalancer
+      uri: url=http://{{hostvars[item].ansible_host}} return_content=yes
+      loop: "{{ groups['lb'] }}"
       register: lb_index
 
     - fail: msg="index failed to return content"
@@ -38,8 +38,8 @@
       with_items: "{{lb_index.results}}"
 
     - name: verify end-to-end db response
-      uri: url=http://3.8.86.80/db return_content=yes
-      with_items: groups.loadbalancer
+      uri: url=http://{{hostvars[item].ansible_host}}/db return_content=yes
+      loop: "{{ groups['lb'] }}"
       register: lb_db
 
     - fail: msg="db failed to return content"
@@ -49,19 +49,19 @@
 - hosts: lb
   tasks:
     - name: verify backend index response
-      uri: url=http://{{item}} return_content=yes
-      with_items: groups.webserver
+      uri: url=http://{{hostvars[item].ansible_host}} return_content=yes
+      loop: "{{ groups['web'] }}"
       register: app_index
 
     - fail: msg="index failed to return content"
-      when: "'Hello, from sunny {{item.item}}!' not in item.content"
+      when: "'Hello, from sunny' not in item.content"
       with_items: "{{app_index.results}}"
 
     - name: verify backend db response
-      uri: url=http://{{item}}/db return_content=yes
-      with_items: groups.webserver
+      uri: url=http://{{hostvars[item].ansible_host}}/db return_content=yes
+      loop: "{{ groups['web'] }}"
       register: app_db
-
+      
     - fail: msg="db failed to return content"
-      when: "'Database Connected from {{item.item}}!' not in item.content"
+      when: "'Database Connected from' not in item.content"
       with_items: "{{app_db.results}}"

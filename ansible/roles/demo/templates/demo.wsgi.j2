@@ -1,0 +1,7 @@
+import os
+os.environ.setdefault('DATABASE_URI','mysql+pymysql://demo:demo@{{ hostvars[groups['db'][0]].ansible_host }}/demo')
+    
+import sys
+sys.path.insert(0, '/var/www/demo')
+
+from demo import app as application

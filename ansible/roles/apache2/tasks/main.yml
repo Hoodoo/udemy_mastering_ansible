@@ -1,0 +1,20 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for apache2
+- name: install apache2
+  apt: name={{item}} state=present update_cache=yes
+  with_items:
+    - apache2
+    - libapache2-mod-wsgi-py3
+
+- name: enable mod_wsgi
+  apache2_module: state=present name=wsgi
+  notify: restart apache2
+
+- name: deactivate apache default site
+  file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
+  notify: restart apache2
+      
+- name: start apache2
+  service: name=apache2 state=started enabled=yes
+
