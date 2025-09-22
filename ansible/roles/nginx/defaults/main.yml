@@ -1,3 +1,7 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # defaults file for nginx
+sites:
+  myapp:
+    frontend: 80
+    backend: 80

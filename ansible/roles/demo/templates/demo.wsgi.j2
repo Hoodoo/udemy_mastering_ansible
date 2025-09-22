@@ -1,5 +1,5 @@
 import os
-os.environ.setdefault('DATABASE_URI','mysql+pymysql://demo:demo@{{ hostvars[groups['db'][0]].ansible_host }}/demo')
+os.environ.setdefault('DATABASE_URI','mysql+pymysql://{{ db_user }}:{{ db_pass }}@{{ hostvars[groups['db'][0]].ansible_host }}/{{ db_name }}')
     
 import sys
 sys.path.insert(0, '/var/www/demo')

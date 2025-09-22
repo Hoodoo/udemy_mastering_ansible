@@ -8,13 +8,21 @@
   service: name=nginx state=started enabled=yes
 
 - name: configure nginx site
-  template: src=nginx.conf.j2 dest=/etc/nginx/sites-available/demo mode=0644
+  template: src=nginx.conf.j2 dest=/etc/nginx/sites-available/{{ item.key }} mode=0644
+  with_dict: "{{ sites }}"
   notify: restart nginx
 
-- name: deactivate default nginx site
-  file: path=/etc/nginx/sites-enabled/default state=absent
+- name: get active sites
+  shell: ls -1 /etc/nginx/sites-enabled
+  register: active
+
+- name: deactivate sites
+  file: path=/etc/nginx/sites-enabled/{{ item }} state=absent
+  with_items: active.stdout_lines
+  when: item is not in sites
   notify: restart nginx
 
-- name: activate demo nginx site
-  file: src=/etc/nginx/sites-available/demo dest=/etc/nginx/sites-enabled/demo state=link
+- name: activate nginx site
+  file: src=/etc/nginx/sites-available/{{ item.key }} dest=/etc/nginx/sites-enabled/{{ item.key }} state=link
+  with_dict: "{{ sites }}"
   notify: restart nginx    
