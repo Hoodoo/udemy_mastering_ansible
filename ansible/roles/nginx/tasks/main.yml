@@ -2,27 +2,35 @@
 ---
 # tasks file for nginx
 - name: install nginx
-  apt: name=nginx state=present update_cache=yes
-
-- name: enable nginx
-  service: name=nginx state=started enabled=yes
+  apt: name=nginx state=present
+  tags: [ 'packages' ]
 
 - name: configure nginx site
   template: src=nginx.conf.j2 dest=/etc/nginx/sites-available/{{ item.key }} mode=0644
   with_dict: "{{ sites }}"
   notify: restart nginx
-
+  tags: [ 'configure' ]
+  
 - name: get active sites
   shell: ls -1 /etc/nginx/sites-enabled
   register: active
-
+  changed_when: "active.stdout_lines | sort != sites.keys() | list | sort"
+  tags: [ 'configure' ]
+  
 - name: deactivate sites
   file: path=/etc/nginx/sites-enabled/{{ item }} state=absent
   with_items: active.stdout_lines
   when: item is not in sites
   notify: restart nginx
-
+  tags: [ 'configure' ]
+  
 - name: activate nginx site
   file: src=/etc/nginx/sites-available/{{ item.key }} dest=/etc/nginx/sites-enabled/{{ item.key }} state=link
   with_dict: "{{ sites }}"
   notify: restart nginx    
+  tags: [ 'configure' ]
+
+- name: enable nginx
+  service: name=nginx state=started enabled=yes
+  tags: [ 'service' ]
+  

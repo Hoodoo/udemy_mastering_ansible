@@ -2,34 +2,40 @@
 ---
 # tasks file for demo
 - name: install application server dependencies
-  apt: name={{item}} state=present update_cache=yes
+  apt: name={{item}} state=present
   with_items:
     - python3-pip
     - python3-virtualenv
+  tags: [ 'packages' ]
 
 - name: copy demo app source
   copy: src=app/ dest=/var/www/demo mode=0755
   notify: restart apache2
-
+  tags: [ 'configure' ]
+  
 - name: enable mod_wsgi
   community.general.apache2_module:
     name: wsgi
     state: present
-    
+  tags: [ 'configure' ]
+  
 - name: deploy apache virtual host config
   template: src=demo.conf.j2 dest=/etc/apache2/sites-available/demo.conf mode=0755
   notify: restart apache2
-
+  tags: [ 'configure' ]
+  
 - name: deploy demo wsgi handler
   template: src=demo.wsgi.j2 dest=/var/www/demo/demo.wsgi mode=0755
   notify: restart apache2
+  tags: [ 'configure' ]
   
 - name: set up virtualenv
   pip: requirements=/var/www/demo/requirements.txt virtualenv=/var/www/demo/.venv
   notify: restart apache2
-
+  tags: [ 'system' ]
+  
 - name: activate the demo site
   file: src=/etc/apache2/sites-available/demo.conf dest=/etc/apache2/sites-enabled/demo.conf state=link
   notify: restart apache2
-
+  tags: [ 'configure' ]
 
